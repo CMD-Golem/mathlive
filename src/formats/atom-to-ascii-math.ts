@@ -376,12 +376,12 @@ export function atomToAsciiMath(
       // Not ZERO-WIDTH
       if (atom.value !== '\u200B') {
         if (OPERATORS[command!]) result = OPERATORS[command!];
-        else {
-          result =
-            command === '\\operatorname'
-              ? atomToAsciiMath(atom.body, options)
-              : (atom.value ?? command);
-        }
+        else if (command === '\\operatorname') {
+          for (let i = 0; i < atom.body.length; i++) {
+            var value = atom.body[i].value;
+            if (value !== undefined) result += value;
+          }
+        } else result = atom.value ?? command;
         result += ' ';
       }
       break;
@@ -399,7 +399,7 @@ export function atomToAsciiMath(
         const rowDelim = {
           'bmatrix': ['[', ']'],
           'bmatrix*': ['[', ']'],
-        }[environment] ?? ['(', ')'];
+        }[environment] ?? ['{', '}'];
         const rows: string[] = [];
         const array = (atom as ArrayAtom).rows;
         for (const row of array) {
@@ -412,7 +412,7 @@ export function atomToAsciiMath(
           'bmatrix': ['[', ']'],
           'bmatrix*': ['[', ']'],
           'cases': ['{', ':}'],
-        }[environment] ?? ['(', ')'];
+        }[environment] ?? ['{', '}'];
         result = delim[0] + rows.join(',') + delim[1];
       }
       break;
